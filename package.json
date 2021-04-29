@@ -9,7 +9,7 @@
     "dev": "nodemon server.js",
     "build:ui": "(Test-Path build)? (rm build) : \"PathNotFound\" && cd ../FullStackOpen/part2/phonebook && npm run build && copy build  ../../../FullStackOpen-part3 -recurse",
     "deploy": "git push heroku main",
-    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild & npm run deploy",
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
     "logs:prod": "heroku logs --tail"
   },
   "author": "iiiGYGYiii",
