@@ -7,20 +7,18 @@ const { updateArrayByField,
     invalidInput,
     deleteElementByField } = require('./logic');
 const express = require('express');
-const app = express();
 const morgan = require('morgan');
+const cors = require('cors');
+
 morgan.token('body', (req, res) => JSON.stringify(req.body));
 
+const app = express();
 //MIDDLEWARES
 app.use(express.json());
 app.use(morgan( ':method :url :status :res[content-length] - :response-time ms :body' ));
+app.use(cors());
 
 // ROUTING
-app.route("/")
-.get((req,res)=>{
-    res.send("<h1> Hello World!</h1>");
-});
-
 app.route("/api/persons")
 .get((req,res)=>{
     res.json(persons);
@@ -94,5 +92,5 @@ app.route("/api/persons/:id")
     res.status(204).end();
 });
 
-const PORT = process.env.PORT ? process.env.PORT : 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () =>{console.log(`Running server on ${PORT}`);});
