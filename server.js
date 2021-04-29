@@ -16,7 +16,8 @@ const app = express();
 //MIDDLEWARES
 app.use(express.json());
 app.use(morgan( ':method :url :status :res[content-length] - :response-time ms :body' ));
-app.use(cors());
+//app.use(cors());
+app.use(express.static('./build'))
 
 // ROUTING
 app.route("/api/persons")
@@ -90,6 +91,11 @@ app.route("/api/persons/:id")
 .delete((req,res)=>{
     persons = deleteElementByField(persons, req.params, 'id');
     res.status(204).end();
+});
+
+app.use((req,res,next)=>{
+    res.status(404).send("<p>404 not found</p>").end();
+    next();
 });
 
 const PORT = process.env.PORT || 3001;

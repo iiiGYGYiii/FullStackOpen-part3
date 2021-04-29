@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "build:ui": "(Test-Path build)? (rm build) : \"PathNotFound\" && cd ../FullStackOpen/part2/phonebook && npm run build && copy build  ../../../FullStackOpen-part3 -recurse",
+    "deploy": "git push heroku main",
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild & npm run deploy",
+    "logs:prod": "heroku logs --tail"
   },
   "author": "iiiGYGYiii",
   "license": "ISC",
