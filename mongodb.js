@@ -1,36 +1,40 @@
-const mongoose = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator');
-const { invalidInput } = require('./logic');
-const mongo_URI = 'mongodb://localhost:27017/phonebookDB';
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+const { invalidInput } = require("./logic");
+const dotenv = require("dotenv");
+dotenv.config();
+const DB_ADMIN = process.env.DB_ADMIN;
+const DB_ADMIN_PASSWORD = process.env.DB_ADMIN_PASSWORD;
+const mongo_URI = `mongodb+srv://${DB_ADMIN}:${DB_ADMIN_PASSWORD}@cluster0.zpqb1.mongodb.net/phonebookDB?retryWrites=true&w=majority`;
 
 mongoose.connect(mongo_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useCreateIndex: true
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+  useCreateIndex: true
 });
 
 const phonebookSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        minLength: 3,
-        required: true,
-        unique: true
-    },
-    number: {
-        type: String,
-        minLength: 8,
-        required: true
-    }
+  name: {
+    type: String,
+    minLength: 3,
+    required: true,
+    unique: true
+  },
+  number: {
+    type: String,
+    minLength: 8,
+    required: true
+  }
 }).plugin(uniqueValidator);
-phonebookSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-      returnedObject.id = returnedObject._id.toString()
-      delete returnedObject._id
-      delete returnedObject.__v
-    }
+phonebookSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  }
 });
-const Phone = mongoose.model('Phone', phonebookSchema);
+const Phone = mongoose.model("Phone", phonebookSchema);
 
 // ************** CREATE *******************
 /**
@@ -40,13 +44,13 @@ const Phone = mongoose.model('Phone', phonebookSchema);
  * @returns A promise. If succeed, the data stored, else an status code.
  */
 const createPhone = async (data) =>{
-    try {
-        const phone = new Phone(data);
-        return await phone.save();
-    } catch (e) {
-        return e.name === 'ValidationError'? {error: e.message}: 400;
-    }
-}
+  try {
+    const phone = new Phone(data);
+    return await phone.save();
+  } catch (e) {
+    return e.name === "ValidationError"? {error: e.message}: 400;
+  }
+};
 
 // ************** READ *******************
 
@@ -56,13 +60,13 @@ const createPhone = async (data) =>{
  * @returns A promise. If succeed, found data, else, undefined.
  */
 const findById = async (id) =>{
-    try {
-        const result = await Phone.findById(id);
-        return result;
-    } catch (e) {
-        return undefined;
-    }
-}
+  try {
+    const result = await Phone.findById(id);
+    return result;
+  } catch (e) {
+    return undefined;
+  }
+};
 
 /**
  * Search on DB given a query. Retrieves all if filter is not given.
@@ -70,17 +74,17 @@ const findById = async (id) =>{
  * @returns A promise of found data
  */
 const find = async (filter={}) =>{
-    const result = await Phone.find(filter);
-    return result;
-}
+  const result = await Phone.find(filter);
+  return result;
+};
 
 /**
  * Get the actual length of items stored in DB.
  * @returns A promise, size of the DB
  */
 const sizeOfCollection = async () =>{
-    return  await Phone.countDocuments({});
-}
+  return  await Phone.countDocuments({});
+};
 
 // ************** UPDATE *******************
 
@@ -92,19 +96,19 @@ const sizeOfCollection = async () =>{
  * @returns A promise, if succeed, updated data; else, status code.
  */
 const updatePhone = async(id, data, size=2) =>{
-    const person = await findById(id);
-    if (!person){
-        return 404;
-    }
-    if(invalidInput(data,size)){
-        return 400;
-    }
-    try {
-        await Phone.updateOne({_id: id}, data, {runValidators:true});
-        return await findById(id);
-    } catch (e) {
-        return e.name === 'ValidationError'? {error: e.message}: 400;
-    }  
+  const person = await findById(id);
+  if (!person){
+    return 404;
+  }
+  if(invalidInput(data,size)){
+    return 400;
+  }
+  try {
+    await Phone.updateOne({_id: id}, data, {runValidators:true});
+    return await findById(id);
+  } catch (e) {
+    return e.name === "ValidationError"? {error: e.message}: 400;
+  }  
 };
 
 // ************** DELETE *******************
@@ -115,19 +119,19 @@ const updatePhone = async(id, data, size=2) =>{
  * @returns Promise. Undefined.
  */
 const deleteElement = async (id) =>{
-    try {
-        await Phone.findByIdAndDelete(id);
-        return
-    } catch (e) {
-        return 
-    }
-}
+  try {
+    await Phone.findByIdAndDelete(id);
+    return;
+  } catch (e) {
+    return; 
+  }
+};
 
 module.exports = {
-    createPhone,
-    find,
-    findById,
-    sizeOfCollection,
-    updatePhone,
-    deleteElement
+  createPhone,
+  find,
+  findById,
+  sizeOfCollection,
+  updatePhone,
+  deleteElement
 };
