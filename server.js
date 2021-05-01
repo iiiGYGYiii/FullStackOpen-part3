@@ -1,14 +1,13 @@
 // MODULES
-let {persons} = require('./data.js');
-const { updateArrayByField,
-    validateRequest,
-    getNextId,
-    elementExists,
-    invalidInput,
-    deleteElementByField } = require('./logic');
+const { createPhone,
+    find,
+    findById,
+    sizeOfCollection,
+    updatePhone,
+    deleteElement
+    } = require('./mongodb');
 const express = require('express');
 const morgan = require('morgan');
-const cors = require('cors');
 
 morgan.token('body', (req, res) => JSON.stringify(req.body));
 
@@ -16,81 +15,57 @@ const app = express();
 //MIDDLEWARES
 app.use(express.json());
 app.use(morgan( ':method :url :status :res[content-length] - :response-time ms :body' ));
-//app.use(cors());
+// app.use(cors());
 app.use(express.static('./build'))
 
 // ROUTING
 app.route("/api/persons")
 .get((req,res)=>{
-    res.json(persons);
+    find().then(data=> res.json(data));
 })
 .post((req,res)=>{
-    const isInvalidRequest = validateRequest({
-        array: persons,
-        field: 'name',
-        request: req.body,
-        size: 2
+    createPhone(req.body).then(data => {
+        typeof data === "number"?
+        res.status(data).end():
+        data.error ?
+        res.status(400).json(data).end():
+        res.json(data);
     });
-    if (isInvalidRequest){
-        res.status(400).json(isInvalidRequest).end();
-        return;
-    }
-    const newPerson = {
-        ...req.body,
-        id: getNextId(persons)
-    };
-    persons = [...persons, newPerson];
-    res.json(newPerson);
 });
 
 app.get("/info", (req,res)=>{
-    const date = new Date().toISOString();
-    res.send(`<p>Phonebook has info for ${persons.length} people </p><p>${date}</p>`);
+    sizeOfCollection().then(response => {
+        const date = new Date().toISOString();
+        res.send(`<p>Phonebook has info for ${response} people </p><p>${date}</p>`)
+    })
 });
 
 app.route("/api/persons/:id")
 .get((req,res)=>{
-    const person = elementExists(persons, 'id', req.params);
-    person ? res.json(person) : res.status(404).end();
+    findById(req.params.id).then(data=>{
+        data ? res.json(data) : res.status(404).end()
+    });
 })
 .put((req,res)=>{
-    const person = elementExists(persons, 'id', req.params);
-    if(!person){
-        res.status(404).end();
-        return;
-    }
-    if(invalidInput(req.body)){
-        res.status(400).end();
-        return;
-    }
-    const putUser = {
-        ...req.body,
-        id: Number(req.params.id)
-    }
-    persons = updateArrayByField(persons, putUser, 'id');
-    res.json(putUser);
+    updatePhone(req.params.id, req.body).then(data=>{
+        typeof data === "number"?
+        res.status(data).end():
+        res.json(data);
+    })
 })
 .patch((req,res)=>{
-    let person = elementExists(persons, 'id', req.params);
-    if (!person){
-        res.status(404).end();
-        return;
-    }
-    if (invalidInput(req.body, 1)){
-        res.status(400).end();
-        return;
-    }
-    person = {
-        ...person,
-        ...req.body
-    };
-    persons = updateArrayByField(persons, person, 'id');
-    res.json(person);
-
+    updatePhone(req.params.id,req.body, 1).then(data=>{
+        typeof data === "number"?
+        res.status(data).end():
+        data.error ?
+        res.status(400).json(data).end():
+        res.json(data);
+    })
 })
 .delete((req,res)=>{
-    persons = deleteElementByField(persons, req.params, 'id');
-    res.status(204).end();
+    deleteElement(req.params.id).then(() =>{
+        res.status(204).end();
+    });
 });
 
 app.use((req,res,next)=>{

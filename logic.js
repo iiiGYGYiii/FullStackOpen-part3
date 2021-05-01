@@ -1,7 +1,7 @@
 const elementExists = (array, field, element) =>{
     return array.filter(el=>el[field]==element[field])[0];
 };
-const invalidInput = ( input, size=2 ) =>{
+const invalidInput = ( input, size ) =>{
     return Object.keys(input).length!==size;
 }
 const validateRequest = ({
@@ -21,11 +21,8 @@ const updateArrayByField = (array, value, field) => array.map(el => el[field]===
 
 const deleteElementByField = (array, value, field) => array.filter(el=> el[field]!=value[field]);
 
-const getNextId = (array) => Math.max(...array.map(el=>el.id))+1;
-
 module.exports = {
     validateRequest,
-    getNextId,
     elementExists,
     invalidInput,
     updateArrayByField,
